@@ -10,7 +10,7 @@ keywords:
 .img_txt{text-align:center}
 </style>
 
- # 下载clash
+# 下载clash
  
   [Dreamacro项目][1]下载最新clash linux 版本，将其解压缩到clash/目录下
  
