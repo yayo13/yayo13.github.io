@@ -16,17 +16,17 @@ keywords:
  
 # 配置
 
-- **下载config_tmp.yaml 和 Country.mmdb**
+## 下载config_tmp.yaml 和 Country.mmdb
 
 ```bash
 cd clash/
 # [url]为机场给的链接
 wget -O config_tmp.yaml [url]
 
- wget -O Country.mmdb <https://www.sub-speeder.com/client-download/Country.mmdb>
+wget -O Country.mmdb <https://www.sub-speeder.com/client-download/Country.mmdb>
 ```
 
-- **生成config.yaml**
+## 生成config.yaml
 
 上一步得到的config_tmp.yaml与clash不一定兼容，需要以[clash官方][2]提供的为模板，将订阅信息更新进去
 
@@ -151,7 +151,7 @@ rules:
 ```
 从wget生成的config_tmp.yaml中，将<mark>proxies</mark>、<mark>proxy-groups</mark>、<mark>rules</mark>信息更新进模板，得到config.yaml
 
-- **配置系统网络**
+## 配置系统网络
 
 ![](/assets/images/articles/20210818_01/01.png)
 
@@ -163,7 +163,7 @@ rules:
 
 设置**忽略主机**为`localhost, 127.0.0.0/8, ::1`
 
-- **配置board**
+## 配置board
 
 终端执行`./clash -f ./config.yaml` 开启clash
 
@@ -173,7 +173,7 @@ rules:
 
 <div class="img_txt">图2. clash board设置</div>
 
-- **配置终端**
+## 配置终端
 
 为了让终端也能走proxy，在`~/.bashrc`内加入
 
