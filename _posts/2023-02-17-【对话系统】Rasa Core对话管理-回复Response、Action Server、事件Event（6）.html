@@ -1,0 +1,227 @@
+<!DOCTYPE html><html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" /><title>【对话系统】Rasa Core对话管理-回复Response、Action Server、事件Event（6） &mdash; zizi7's blog</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/vendor/primer-css/css/primer.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/components/collection.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/components/repo-card.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/sections/repo-list.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/components/boxed-group.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/globals/common.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/globals/responsive.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/posts/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/vendor/octicons/octicons/octicons.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/mzlogin/rouge-themes@master/dist/github.css"><link rel="canonical" href="https://yayo13.github.io/2023/02/17/%E5%AF%B9%E8%AF%9D%E7%B3%BB%E7%BB%9F-Rasa-Core%E5%AF%B9%E8%AF%9D%E7%AE%A1%E7%90%86-%E5%9B%9E%E5%A4%8DResponse-Action-Server-%E4%BA%8B%E4%BB%B6Event-6/"><link rel="alternate" type="application/atom+xml" title="zizi7's blog" href="https://yayo13.github.io"><link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/favicon.ico"><meta property="og:title" content="【对话系统】Rasa Core对话管理-回复Response、Action Server、事件Event（6）"><meta name="keywords" content=""><meta name="og:keywords" content=""><meta name="description" content=""><meta name="og:description" content=""><meta property="og:url" content="https://yayo13.github.io/2023/02/17/%E5%AF%B9%E8%AF%9D%E7%B3%BB%E7%BB%9F-Rasa-Core%E5%AF%B9%E8%AF%9D%E7%AE%A1%E7%90%86-%E5%9B%9E%E5%A4%8DResponse-Action-Server-%E4%BA%8B%E4%BB%B6Event-6/"><meta property="og:site_name" content="zizi7's blog"><meta property="og:type" content="article"><meta property="og:locale" content="zh_CN" /><meta property="article:published_time" content="2023-02-17"> <script src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/vendor/jquery/dist/jquery.min.js"></script> <script src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/js/jquery-ui.js"></script> <script src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/js/main.js"></script></head><body class="" data-mz=""><header class="site-header"><div class="container"><h1><a href="https://yayo13.github.io/" title="zizi7's blog"><span class="octicon octicon-mark-github"></span> zizi7's blog</a></h1><button class="collapsed mobile-visible" type="button" onclick="toggleMenu();"> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </button><nav class="site-header-nav" role="navigation"> <a href="https://yayo13.github.io/" class=" site-header-nav-item" target="" title="首页">首页</a> <a href="https://yayo13.github.io/categories/" class=" site-header-nav-item" target="" title="分类">分类</a> <a href="https://yayo13.github.io/about/" class=" site-header-nav-item" target="" title="关于">关于</a></nav></div></header><section class="collection-head small geopattern" data-pattern-id="【对话系统】Rasa Core"><div class="container"><div class="columns"><div class="column three-fourths"><div class="collection-title"><h1 class="collection-header">【对话系统】Rasa Core对话管理-回复Response、Action Server、事件Event（6）</h1><div class="collection-info"> <span class="meta-info"> <span class="octicon octicon-calendar"></span> 2023/02/17 </span> <span class="meta-info"> <span class="octicon octicon-file-directory"></span> <a href="https://yayo13.github.io/categories/#NLP" title="NLP">NLP</a> </span> <span class="meta-info"> <span class="octicon octicon-file-directory"></span> <a href="https://yayo13.github.io/categories/#对话系统" title="对话系统">对话系统</a> </span> <span class="meta-info"> <span class="octicon octicon-clock"></span> 共 7072 字，约 21 分钟 </span></div></div></div><div class="column one-fourth mobile-hidden"><div class="collection-title"></div></div></div></div></section><section class="container content"><div class="columns"><div class="column three-fourths" ><article class="article-content markdown-body"><style> .img_txt{text-align:center} table{margin: auto;}</style><h1 id="对话管理训练数据">对话管理训练数据</h1><h2 id="response">Response</h2><p>回复Response定义了机器人对用户的回复信息，该信息是预先定义好的，由rasa根据决策结果挑选执行</p><ul><li>Response通常在<code class="language-plaintext highlighter-rouge">domain.yml</code>中定义，也可以放在一个单独的文件<code class="language-plaintext highlighter-rouge">responses.yml</code>中</li><li>Response支持富文本信息，包括<mark>text、image和buttons</mark>，同时支持custom自定义信息</li><li>Response名称必须以<code class="language-plaintext highlighter-rouge">utter_</code>开头</li></ul><p>参考<a href="https://rasa.com/docs/rasa/responses">官方文档Responses</a></p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">responses</span><span class="pi">:</span>
+  <span class="c1"># 文本信息</span>
+  <span class="na">utter_greet</span><span class="pi">:</span>
+    <span class="c1"># rasa会从同一个类别中的多条信息随机挑选一个</span>
+    <span class="pi">-</span> <span class="na">text</span><span class="pi">:</span> <span class="s2">"</span><span class="s">您好，请问您哪里不舒服？"</span>
+    <span class="pi">-</span> <span class="na">text</span><span class="pi">:</span> <span class="s2">"</span><span class="s">您好，我是您的用药小顾问，请问有什么可以帮您？"</span>
+  <span class="na">utter_goodbye</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">text</span><span class="pi">:</span> <span class="s2">"</span><span class="s">再见"</span>
+  <span class="c1"># 图片链接</span>
+  <span class="na">utter_cheer_up</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">text</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Here</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">something</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">cheer</span><span class="nv"> </span><span class="s">you</span><span class="nv"> </span><span class="s">up:"</span>
+      <span class="na">image</span><span class="pi">:</span> <span class="s2">"</span><span class="s">https://i.imgur.com/nGF1K8f.jpg"</span>
+  <span class="c1"># 按钮信息</span>
+  <span class="na">utter_greet</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">text</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Hey!</span><span class="nv"> </span><span class="s">Would</span><span class="nv"> </span><span class="s">you</span><span class="nv"> </span><span class="s">like</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">purchase</span><span class="nv"> </span><span class="s">motor</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">home</span><span class="nv"> </span><span class="s">insurance?"</span>
+      <span class="na">buttons</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">title</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Motor</span><span class="nv"> </span><span class="s">insurance"</span>
+          <span class="na">payload</span><span class="pi">:</span> <span class="s1">'</span><span class="s">/informinsurance'</span>
+        <span class="pi">-</span> <span class="na">title</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Home</span><span class="nv"> </span><span class="s">insurance"</span>
+          <span class="na">payload</span><span class="pi">:</span> <span class="s1">'</span><span class="s">/informinsurance'</span>
+</code></pre></div></div><h3 id="buttons信息">buttons信息</h3><p>按钮信息buttons包含两个key：<code class="language-plaintext highlighter-rouge">title</code>、<code class="language-plaintext highlighter-rouge">payload</code>：</p><ul><li>title：按钮上面的文字</li><li>payload：当用户点击该按钮，返回给rasa的信息</li></ul><p><code class="language-plaintext highlighter-rouge">payload</code>的格式为<code class="language-plaintext highlighter-rouge">/intent_nameentity_name</code>，其中的<code class="language-plaintext highlighter-rouge">/</code>会被正则解释器<code class="language-plaintext highlighter-rouge">RegexInterpreter</code>捕捉</p><p>rasa收到<code class="language-plaintext highlighter-rouge">payload</code>的信息后会<mark>修改nlu预测的意图和实体</mark>，从而影响对话过程</p><p><img src="/assets/images/articles/20230217_01/01.png" alt="" /></p><div class="img_txt">图1. 按钮信息</div><h3 id="自定义信息格式">自定义信息格式</h3><p>根据与rasa连接的对话前端的特性，可以使用<code class="language-plaintext highlighter-rouge">custom</code>编写该前端支持的信息格式</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 以json格式发送给slack前端</span>
+<span class="na">responses</span><span class="pi">:</span>
+  <span class="na">utter_take_bet</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">custom</span><span class="pi">:</span>
+      <span class="na">blocks</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">section</span>
+        <span class="na">text</span><span class="pi">:</span>
+          <span class="na">text</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Make</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">bet</span><span class="nv"> </span><span class="s">on</span><span class="nv"> </span><span class="s">when</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">world</span><span class="nv"> </span><span class="s">will</span><span class="nv"> </span><span class="s">end:"</span>
+          <span class="na">type</span><span class="pi">:</span> <span class="s">mrkdwn</span>
+        <span class="na">accessory</span><span class="pi">:</span>
+          <span class="na">type</span><span class="pi">:</span> <span class="s">datepicker</span>
+          <span class="na">initial_date</span><span class="pi">:</span> <span class="s1">'</span><span class="s">2019-05-21'</span>
+          <span class="na">placeholder</span><span class="pi">:</span>
+            <span class="na">type</span><span class="pi">:</span> <span class="s">plain_text</span>
+            <span class="na">text</span><span class="pi">:</span> <span class="s">Select a date</span>
+</code></pre></div></div><h3 id="在response中使用变量">在Response中使用变量</h3><p>可以在response的语句中使用变量（槽slot），执行时rasa会使用该变量的值做更新</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">responses</span><span class="pi">:</span>
+  <span class="na">utter_greet</span><span class="pi">:</span>
+    <span class="c1"># name是一个slot的名称</span>
+    <span class="pi">-</span> <span class="na">text</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Hey,</span><span class="nv"> </span><span class="s">{name}.</span><span class="nv"> </span><span class="s">How</span><span class="nv"> </span><span class="s">are</span><span class="nv"> </span><span class="s">you?"</span>
+</code></pre></div></div><h3 id="指定response对应的channel">指定Response对应的channel</h3><p><code class="language-plaintext highlighter-rouge">channel</code>是指rasa与前端连接的通道，在<code class="language-plaintext highlighter-rouge">credentials.yml</code>中实现配置</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">###### 当前使用的channel是scoketio #####</span>
+
+<span class="c1">#facebook:</span>
+<span class="c1">#  verify: "&lt;verify&gt;"</span>
+<span class="c1">#  secret: "&lt;your secret&gt;"</span>
+<span class="c1">#  page-access-token: "&lt;your page access token&gt;"</span>
+
+<span class="c1">#slack:</span>
+<span class="c1">#  slack_token: "&lt;your slack token&gt;"</span>
+<span class="c1">#  slack_channel: "&lt;the slack channel&gt;"</span>
+<span class="c1">#  slack_signing_secret: "&lt;your slack signing secret&gt;"</span>
+
+<span class="na">socketio</span><span class="pi">:</span>
+ <span class="na">user_message_evt</span><span class="pi">:</span> <span class="s">user_uttered</span>
+ <span class="na">bot_message_evt</span><span class="pi">:</span> <span class="s">bot_uttered</span>
+ <span class="na">session_persistence</span><span class="pi">:</span> <span class="no">false</span>
+</code></pre></div></div><p>可以指定某条response所述的channel</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">responses</span><span class="pi">:</span>
+  <span class="na">utter_ask_game</span><span class="pi">:</span>
+  <span class="c1"># 这条信息只针对slack通道，其他通道不能收到</span>
+  <span class="pi">-</span> <span class="na">text</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Which</span><span class="nv"> </span><span class="s">game</span><span class="nv"> </span><span class="s">would</span><span class="nv"> </span><span class="s">you</span><span class="nv"> </span><span class="s">like</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">play</span><span class="nv"> </span><span class="s">on</span><span class="nv"> </span><span class="s">Slack?"</span>
+    <span class="na">channel</span><span class="pi">:</span> <span class="s2">"</span><span class="s">slack"</span>
+  <span class="c1"># 这条信息对所有通道都有效</span>
+  <span class="pi">-</span> <span class="na">text</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Which</span><span class="nv"> </span><span class="s">game</span><span class="nv"> </span><span class="s">would</span><span class="nv"> </span><span class="s">you</span><span class="nv"> </span><span class="s">like</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">play?"</span>
+</code></pre></div></div><p>每种类型的回复中要<mark>确保至少有一条信息是不指定通道</mark>的，否则在类似<code class="language-plaintext highlighter-rouge">rasa shell</code>和<code class="language-plaintext highlighter-rouge">rasa interactive</code>等场景就无法正常工作了</p><h3 id="给response指定限制条件">给Response指定限制条件</h3><p>可以通过指定某些槽slot的状态限制该response能否被选中</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">slots</span><span class="pi">:</span>
+  <span class="na">logged_in</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">bool</span>
+    <span class="na">influence_conversation</span><span class="pi">:</span> <span class="s">False</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">custom</span>
+  <span class="na">name</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">text</span>
+    <span class="na">influence_conversation</span><span class="pi">:</span> <span class="s">False</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">custom</span>
+
+<span class="na">responses</span><span class="pi">:</span>
+  <span class="na">utter_greet</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">condition</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">slot</span>
+          <span class="na">name</span><span class="pi">:</span> <span class="s">logged_in</span>
+          <span class="na">value</span><span class="pi">:</span> <span class="no">true</span>
+      <span class="na">text</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Hey,</span><span class="nv"> </span><span class="s">{name}.</span><span class="nv"> </span><span class="s">Nice</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">see</span><span class="nv"> </span><span class="s">you</span><span class="nv"> </span><span class="s">again!</span><span class="nv"> </span><span class="s">How</span><span class="nv"> </span><span class="s">are</span><span class="nv"> </span><span class="s">you?"</span>
+
+    <span class="pi">-</span> <span class="na">text</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Welcome.</span><span class="nv"> </span><span class="s">How</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">your</span><span class="nv"> </span><span class="s">day</span><span class="nv"> </span><span class="s">going?"</span>
+</code></pre></div></div><p>使用<code class="language-plaintext highlighter-rouge">condition</code>选项，在其内部设置<code class="language-plaintext highlighter-rouge">type</code>、<code class="language-plaintext highlighter-rouge">name</code>(slot的名称)、<code class="language-plaintext highlighter-rouge">value</code>(slot的值)</p><p>需要注意<code class="language-plaintext highlighter-rouge">value: true</code>和<code class="language-plaintext highlighter-rouge">value: 'true'</code>的区别，前者将其作为<code class="language-plaintext highlighter-rouge">bool</code>类型，后者将其作为<code class="language-plaintext highlighter-rouge">string</code>类型</p><h3 id="response的内部优先级">Response的内部优先级</h3><p>rasa在<mark>确保能正常输出的前提下尽可能挑选更精准</mark>的response：</p><p>1）首先查找是否有满足<code class="language-plaintext highlighter-rouge">channel</code>限制和<code class="language-plaintext highlighter-rouge">condition</code>限制的response</p><p>2）如果不满足上述条件，则查找仅满足<code class="language-plaintext highlighter-rouge">channel</code>限制的response</p><p>3）如果不满足上述条件，则查找仅满足<code class="language-plaintext highlighter-rouge">condition</code>限制的response</p><p>4）如果不满足上述条件，则查找无限制的response</p><p>在上述的每一步，如果有1条，则输出，如果有多条，则随机输出其中1条</p><h2 id="自定义action">自定义action</h2><p><code class="language-plaintext highlighter-rouge">Response</code>的方式只能实现<strong>模板化的回复</strong>，无法适用<strong>更复杂的场景</strong>（比如查询数据库生成回复，或者执行天气查询动作，甚至打开电灯等）</p><p>rasa通过rasa-sdk向开发者开放了自定义action的能力，开发者需要</p><ul><li>在<code class="language-plaintext highlighter-rouge">actions/actions.py</code>中实现自定义action</li><li>在<code class="language-plaintext highlighter-rouge">domain.yml</code>的<code class="language-plaintext highlighter-rouge">actions</code>中声明自定义action的名称（必须以<code class="language-plaintext highlighter-rouge">action_</code>开头）</li></ul><p>rasa core运行的同时，还需通过<code class="language-plaintext highlighter-rouge">rasa run actions</code><mark>开启action server</mark>，当需要执行自定义action时向action服务器发送POST请求（信息格式为json），后者返回执行完毕的结果（json格式）给到core</p><p>自定义action不仅可以用于<mark>针对意图的自定义动作</mark>，还可以在<mark>表单form场景下</mark><strong>验证</strong>、<strong>提取slot值</strong>，<strong>动态增删slot</strong>，<strong>自定义表单提问动作</strong>，这部分内容参考<a href="【对话系统】Rasa Core对话管理-表单form（4）">【对话系统】Rasa Core对话管理-表单form（4）</a></p><h3 id="自定义动作的输入与输出">自定义动作的输入与输出</h3><p>对于针对意图的自定义动作，action server接收rasa core发送的json格式信息，返回以json格式封装的events和response信息来影响对话进程</p><p>详细资料参考<a href="https://rasa.com/docs/rasa/action-server">官方文档action-server</a></p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#### rasa core发送给action server的json格式信息</span>
+<span class="c1"># 包含 预测的下一步action名称、会话ID、tracker信息、domain信息</span>
+<span class="pi">{</span>
+  <span class="s2">"</span><span class="s">next_action"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">string"</span><span class="pi">,</span>        <span class="c1"># actions.py中应该有该action的实现</span>
+  <span class="s2">"</span><span class="s">sender_id"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">string"</span><span class="pi">,</span>          <span class="c1"># 客户端(channel)id，actions.py可以根据不同id做不同反应</span>
+  <span class="s2">"</span><span class="s">tracker"</span><span class="pi">:</span> <span class="pi">{</span>
+    <span class="s2">"</span><span class="s">conversation_id"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">default"</span><span class="pi">,</span>
+    <span class="s2">"</span><span class="s">slots"</span><span class="pi">:</span> <span class="pi">{},</span>                  <span class="c1"># domain.yml中定义的所有slot以及它们此时的值</span>
+    <span class="s2">"</span><span class="s">latest_message"</span><span class="pi">:</span> <span class="pi">{},</span>         <span class="c1"># 最近一次的对话信息</span>
+    <span class="s2">"</span><span class="s">latest_event_time"</span><span class="pi">:</span> <span class="nv">1537645578.314389</span><span class="pi">,</span>  <span class="c1"># 最近一个被tracker记录的event的时间戳</span>
+    <span class="s2">"</span><span class="s">followup_action"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">string"</span><span class="pi">,</span>
+    <span class="s2">"</span><span class="s">paused"</span><span class="pi">:</span> <span class="nv">false</span><span class="pi">,</span>              <span class="c1"># 该会话是否处于暂停状态</span>
+    <span class="s2">"</span><span class="s">events"</span><span class="pi">:</span> <span class="pi">[],</span>                 <span class="c1"># 该会话产生的所有的events</span>
+    <span class="s2">"</span><span class="s">latest_input_channel"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">rest"</span><span class="pi">,</span> <span class="c1"># 最近一次用户信息的来源channel</span>
+    <span class="s2">"</span><span class="s">active_loop"</span><span class="pi">:</span> <span class="pi">{},</span>            <span class="c1"># 当前处于激活状态的表单form</span>
+    <span class="s2">"</span><span class="s">latest_action"</span><span class="pi">:</span> <span class="pi">{}</span>           <span class="c1"># 上一次执行的action</span>
+  <span class="pi">},</span>
+  <span class="s2">"</span><span class="s">domain"</span><span class="pi">:</span> <span class="pi">{</span>    <span class="c1"># domain.yml中的静态信息，一般actions.py不会使用</span>
+    <span class="s2">"</span><span class="s">config"</span><span class="pi">:</span> <span class="pi">{},</span>
+    <span class="s2">"</span><span class="s">session_config"</span><span class="pi">:</span> <span class="pi">{},</span>
+    <span class="s2">"</span><span class="s">intents"</span><span class="pi">:</span> <span class="pi">[],</span>
+    <span class="s2">"</span><span class="s">entities"</span><span class="pi">:</span> <span class="pi">[],</span>
+    <span class="s2">"</span><span class="s">slots"</span><span class="pi">:</span> <span class="pi">{},</span>
+    <span class="s2">"</span><span class="s">responses"</span><span class="pi">:</span> <span class="pi">{},</span>
+    <span class="s2">"</span><span class="s">actions"</span><span class="pi">:</span> <span class="pi">[],</span>
+    <span class="s2">"</span><span class="s">forms"</span><span class="pi">:</span> <span class="pi">{},</span>
+    <span class="s2">"</span><span class="s">e2e_actions"</span><span class="pi">:</span> <span class="pi">[]</span>
+  <span class="pi">},</span>
+  <span class="s2">"</span><span class="s">version"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">version"</span>  <span class="c1"># rasa core的版本</span>
+<span class="pi">}</span>
+
+<span class="c1">#### action server返回给rasa core的json格式信息</span>
+<span class="c1"># 需要包含events和responses</span>
+<span class="pi">{</span>
+  <span class="c1"># action server产生的事件event，通过这些event可以影响对话进程</span>
+  <span class="s2">"</span><span class="s">events"</span><span class="pi">:</span> <span class="pi">[</span>
+            <span class="pi">{</span>
+                <span class="c1"># 事件类型为slot，事件内容是给名称为temperature的slot赋值30</span>
+                <span class="s2">"</span><span class="s">event"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">slot"</span><span class="pi">,</span>
+                <span class="s2">"</span><span class="s">timestamp"</span><span class="pi">:</span> <span class="nv">null</span><span class="pi">,</span>
+                <span class="s2">"</span><span class="s">name"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">temperature"</span><span class="pi">,</span>
+                <span class="s2">"</span><span class="s">value"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30"</span>
+            <span class="pi">}</span>
+        <span class="pi">],</span>
+  <span class="c1"># action server产生的回复信息，可以为富文本形式，也可以为特定channel兼容的格式</span>
+  <span class="s2">"</span><span class="s">responses"</span><span class="pi">:</span> <span class="pi">[</span>
+    <span class="pi">{</span><span class="s2">"</span><span class="s">text"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">This</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">your</span><span class="nv"> </span><span class="s">weather</span><span class="nv"> </span><span class="s">forecast!"</span><span class="pi">}</span>
+    <span class="pi">]</span>
+<span class="pi">}</span>
+</code></pre></div></div><h3 id="自定义动作的实现">自定义动作的实现</h3><p>自定义动作通过继承类<code class="language-plaintext highlighter-rouge">Action</code>，改写其<code class="language-plaintext highlighter-rouge">name</code>和<code class="language-plaintext highlighter-rouge">run</code>函数实现</p><div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">rasa_sdk</span> <span class="kn">import</span> <span class="n">Action</span>
+<span class="kn">from</span> <span class="nn">rasa_sdk.events</span> <span class="kn">import</span> <span class="n">SlotSet</span>
+
+<span class="k">class</span> <span class="nc">ActionCheckRestaurants</span><span class="p">(</span><span class="n">Action</span><span class="p">):</span>
+   <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
+     <span class="s">''' 返回action的名称，需要与domain.yml中声明的一致
+         action server通过调用该函数注册所有自定义action
+     '''</span>
+      <span class="k">return</span> <span class="s">"action_check_restaurants"</span>
+
+   <span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+           <span class="n">dispatcher</span><span class="p">:</span> <span class="n">CollectingDispatcher</span><span class="p">,</span>
+           <span class="n">tracker</span><span class="p">:</span> <span class="n">Tracker</span><span class="p">,</span>
+           <span class="n">domain</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Text</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Text</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+      <span class="s">''' 自定义action的入口函数
+          输入： dispatcher - 生成回复信息
+                 tracker    - 当前用户的跟踪器，用来获取slot值、历史信息、当前激活的表单等
+                 domain     - 静态的domain.yml内容，一般不使用
+          输出： List[Dict[Text, Any]] - 返回的envents
+                 async是python中协程函数的关键字，配合await实现单线程内的并发
+      '''</span>
+      <span class="c1"># 可以返回自定义富文本信息(text、image、buttons、accachment等)
+</span>      <span class="n">dispatcher</span><span class="p">.</span><span class="n">utter_message</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s">"looking for context..."</span><span class="p">)</span>
+      <span class="c1"># 可以返回domain.yml中定义好的utter_信息
+</span>      <span class="n">dispatcher</span><span class="p">.</span><span class="n">utter_message</span><span class="p">(</span><span class="n">response</span><span class="o">=</span><span class="s">"utter_greet"</span><span class="p">)</span>
+
+      <span class="c1"># 获取slot值
+</span>      <span class="n">cuisine</span> <span class="o">=</span> <span class="n">tracker</span><span class="p">.</span><span class="n">get_slot</span><span class="p">(</span><span class="s">'cuisine'</span><span class="p">)</span>
+      <span class="n">q</span> <span class="o">=</span> <span class="s">"select * from restaurants where cuisine='{0}' limit 1"</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">cuisine</span><span class="p">)</span>
+      <span class="n">result</span> <span class="o">=</span> <span class="n">db</span><span class="p">.</span><span class="n">query</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+
+      <span class="c1"># 使用SlotSet产生slot事件
+</span>      <span class="k">return</span> <span class="p">[</span><span class="n">SlotSet</span><span class="p">(</span><span class="s">"matches"</span><span class="p">,</span> <span class="n">result</span> <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[])]</span>
+</code></pre></div></div><p>在终端通过命令开启action server</p><div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">### rasa core和action server在同一台服务器</span>
+rasa run actions                      <span class="c"># 默认查找actions/目录</span>
+rasa run actions <span class="nt">--actions</span> ACTION_PKG <span class="c"># 指定actions package所在的目录</span>
+
+<span class="c">### 指定action core监听的地址 </span>
+<span class="nv">SANIC_HOST</span><span class="o">=</span>192.168.69.150 rasa run actions
+</code></pre></div></div><h2 id="事件event">事件Event</h2><p>rasa中的<mark>对话可以表示为一系列的事件events</mark>，自定义action也是通过event来影响对话的</p><p>事件Event<strong>可能通过动作Action产生（此时该事件由rasa自动产生），也可能由用户自定义产生</strong></p><table><tr><th>Event类型</th><th>事件描述</th><th>产生方式</th></tr><tr><td>slot</td><td>给某个slot赋值</td><td>可由rasa自动产生，也可通过用户调用SlotSet产生</td></tr><tr><td>reset_slots</td><td>将所有的slots重置为null</td><td>只能通过用户调用AllSlotsReset产生</td></tr><tr><td>reminder</td><td>为某个意图设置自动触发时间</td><td>只能通过用户调用ReminderScheduled产生</td></tr><tr><td>cancel_reminder</td><td>取消某个意图的自动触发</td><td>只能通过用户调用ReminderCancelled产生</td></tr><tr><td>pause</td><td>暂停对话，rasa不再回复用户信息</td><td>只能通过用户调用ConversationPaused产生</td></tr><tr><td>resume</td><td>恢复被暂停的对话，rasa只对之后的用户信息做回复</td><td>只能通过用户调用ConversationResumed产生</td></tr><tr><td>followup</td><td>绕过预测器，强制执行指定action</td><td>只能通过用户调用FollowupAction产生</td></tr><tr><td>rewind</td><td>还原上一条用户信息的所有副作用，并删除上一条用户事件</td><td>只能通过用户调用UserUtteranceReverted产生</td></tr><tr><td>undo</td><td>还原上一条bot动作的所有副作用，并删除上一条bot动作</td><td>只能通过用户调用ActionReverted产生</td></tr><tr><td>restart</td><td>重置tracker，之前所有的对话信息包括该restart事件全部删除</td><td>只能通过用户调用Restarted产生</td></tr><tr><td>session_started</td><td>开启一个新的对话，会迁移所有的SlotSet事件到新的对话中</td><td>第一次开始对话或者上轮对话失效后重新恢复对话时自动产生，也可以通过用户调用SessionStarted产生</td></tr><tr><td>user</td><td>当用户发送一条信息给bot时产生</td><td>自动产生，一般不会由用户调用UserUttered产生</td></tr><tr><td>bot</td><td>当bot发送一条信息给用户时产生</td><td>bot返回response时产生，一般不会由用户调用BotUttered产生</td></tr><tr><td>action</td><td>当bot执行任意一个action时产生</td><td>bot执行action时产生，一般不会由用户调用ActionExecuted产生</td></tr></table><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">## slot类型事件</span>
+<span class="pi">{</span>
+    <span class="s2">"</span><span class="s">event"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">slot"</span><span class="pi">,</span>
+    <span class="s2">"</span><span class="s">name"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">departure_airport"</span><span class="pi">,</span>  <span class="c1"># slot名称</span>
+    <span class="s2">"</span><span class="s">value"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">BER"</span>                <span class="c1"># 填入的值</span>
+<span class="pi">}</span>
+
+<span class="c1">## reminder类型事件</span>
+<span class="pi">{</span>
+  <span class="s2">"</span><span class="s">event"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">reminder"</span><span class="pi">,</span>
+  <span class="s2">"</span><span class="s">intent"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">my_intent"</span><span class="pi">,</span>                                  <span class="c1"># 针对的意图名称</span>
+  <span class="s2">"</span><span class="s">entities"</span><span class="pi">:</span> <span class="pi">{</span><span class="s2">"</span><span class="s">entity1"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">value1"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">entity2"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">value2"</span><span class="pi">},</span> <span class="c1"># 需要发送给该意图的实体</span>
+  <span class="s2">"</span><span class="s">date_time"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2018-09-03T11:41:10.128172"</span><span class="pi">,</span>              <span class="c1"># 意图触发时间</span>
+  <span class="s2">"</span><span class="s">name"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">my_reminder"</span><span class="pi">,</span>                                  <span class="c1"># 该事件的id</span>
+  <span class="s2">"</span><span class="s">kill_on_user_msg"</span><span class="pi">:</span> <span class="nv">true</span><span class="pi">,</span>                               <span class="c1"># 用户信息是否会中断该事件</span>
+<span class="pi">}</span>
+
+<span class="c1">## cancel_reminder类型事件</span>
+<span class="pi">{</span>
+  <span class="s2">"</span><span class="s">event"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">cancel_reminder"</span><span class="pi">,</span>
+  <span class="s2">"</span><span class="s">name"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">my_reminder"</span><span class="pi">,</span>                          <span class="c1"># 该事件的id</span>
+  <span class="s2">"</span><span class="s">intent"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">my_intent"</span><span class="pi">,</span>                          <span class="c1"># 针对的意图名称</span>
+  <span class="s2">"</span><span class="s">entities"</span><span class="pi">:</span> <span class="pi">[</span>
+        <span class="pi">{</span><span class="s2">"</span><span class="s">entity"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">entity1"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">value"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">value1"</span><span class="pi">},</span> <span class="c1"># 需要发送给该意图的实体</span>
+        <span class="pi">{</span><span class="s2">"</span><span class="s">entity"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">entity2"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">value"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">value2"</span><span class="pi">},</span>
+    <span class="pi">],</span>
+  <span class="s2">"</span><span class="s">date_time"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2018-09-03T11:41:10.128172"</span><span class="pi">,</span>      <span class="c1"># 事件触发时间</span>
+<span class="pi">}</span>
+
+<span class="c1">## followup类型事件</span>
+<span class="pi">{</span>
+    <span class="s2">"</span><span class="s">event"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">followup"</span><span class="pi">,</span>
+    <span class="s2">"</span><span class="s">name"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">my_action"</span>  <span class="c1"># 将被强制执行的action名称</span>
+<span class="pi">}</span>
+
+<span class="c1">## user类型事件</span>
+<span class="pi">{</span>
+    <span class="s2">"</span><span class="s">event"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">user"</span><span class="pi">,</span>
+    <span class="s2">"</span><span class="s">text"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Hey"</span><span class="pi">,</span>            <span class="c1"># 用户信息内容</span>
+    <span class="s2">"</span><span class="s">parse_data"</span><span class="pi">:</span> <span class="pi">{</span>           <span class="c1"># NLU对信息的输出</span>
+        <span class="s2">"</span><span class="s">intent"</span><span class="pi">:</span> <span class="pi">{</span>
+            <span class="s2">"</span><span class="s">name"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">greet"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">confidence"</span><span class="pi">:</span> <span class="nv">0.9</span>
+        <span class="pi">},</span>
+        <span class="s2">"</span><span class="s">entities"</span><span class="pi">:</span> <span class="pi">[]</span>
+    <span class="pi">},</span>
+    <span class="s2">"</span><span class="s">metadata"</span><span class="pi">:</span> <span class="pi">{},</span>           <span class="c1"># 用户信息中附带的meta数据</span>
+<span class="pi">}</span>
+
+<span class="c1">## action类型事件</span>
+<span class="pi">{</span>
+    <span class="s2">"</span><span class="s">event"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">action"</span><span class="pi">,</span>
+    <span class="s2">"</span><span class="s">name"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">my_action"</span>       <span class="c1"># 被执行的action名称</span>
+<span class="pi">}</span>
+</code></pre></div></div><hr /></article><div class="share"></div><div class="comment"></div></div><div class="column one-fourth"><h3>Search</h3><div id="site_search"> <input style="width:96%" type="text" id="search_box" placeholder="Search"></div><ul id="search_results" style="font-size:14px;list-style-type:none;padding-top:10px;padding-left:10px;"></ul><script src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/js/simple-jekyll-search.min.js"></script> <script type="text/javascript"> SimpleJekyllSearch({ searchInput: document.getElementById('search_box'), resultsContainer: document.getElementById('search_results'), json: 'https://yayo13.github.io/assets/search_data.json?v=1676979773', searchResultTemplate: '<li><a href="{url}" title="{title}">{title}</a></li>', noResultsText: 'No results found', limit: 10, fuzzy: false, exclude: ['Welcome'] }) </script><h3 class="post-directory-title mobile-hidden">Table of Contents</h3><div id="post-directory-module" class="mobile-hidden"><section class="post-directory"><dl></dl></section></div><script src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/js/jquery.toc.js"></script></div></div></section><script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script> <script type="text/x-mathjax-config"> MathJax.Hub.Config({ tex2jax: { skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'], inlineMath: [['$','$']] } }); </script><footer class="container"><div class="site-footer" role="contentinfo"><div class="copyright left mobile-block"> © 2021 <span title="zizi7">zizi7</span> <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a></div><ul class="site-footer-links right mobile-hidden"><li> <a href="javascript:window.scrollTo(0,0)" >TOP</a></li></ul><a href="https://github.com/yayo13/yayo13.github.io" target="_blank" aria-label="view source code"> <span class="mega-octicon octicon-mark-github" title="GitHub"></span> </a><ul class="site-footer-links mobile-hidden"><li> <a href="https://yayo13.github.io/" title="首页" target="">首页</a></li><li> <a href="https://yayo13.github.io/categories/" title="分类" target="">分类</a></li><li> <a href="https://yayo13.github.io/about/" title="关于" target="">关于</a></li><li><a href="https://yayo13.github.io"><span class="octicon octicon-rss" style="color:orange;"></span></a></li></ul><script async src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/vendor/busuanzi/2.3/busuanzi.pure.mini.js"></script><div class="mobile-hidden" style="margin-top:8px"> <span id="busuanzi_container_site_pv" style="display:none"> 本站访问量<span id="busuanzi_value_site_pv"></span>次 </span> <span id="busuanzi_container_site_uv" style="display:none"> / 本站访客数<span id="busuanzi_value_site_uv"></span>人 </span> <span id="busuanzi_container_page_pv" style="display:none"> / 本页访问量<span id="busuanzi_value_page_pv"></span>次 / 统计始于2021-04-28 </span></div></div></footer><div class="tools-wrapper"> <a class="gotop" href="#" title="回到顶部"><span class="octicon octicon-arrow-up"></span></a></div><script src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/js/geopattern.js"></script> <script> jQuery(document).ready(function($) { $('.geopattern').each(function(){ $(this).geopattern($(this).data('pattern-id')); }); /* hljs.initHighlightingOnLoad(); */ }); </script></body></html>

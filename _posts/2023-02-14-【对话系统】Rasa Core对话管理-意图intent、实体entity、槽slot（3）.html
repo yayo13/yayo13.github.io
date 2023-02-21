@@ -1,0 +1,183 @@
+<!DOCTYPE html><html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" /><title>【对话系统】Rasa Core对话管理-意图intent、实体entity、槽slot（3） &mdash; zizi7's blog</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/vendor/primer-css/css/primer.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/components/collection.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/components/repo-card.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/sections/repo-list.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/components/boxed-group.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/globals/common.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/globals/responsive.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/css/posts/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/vendor/octicons/octicons/octicons.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/mzlogin/rouge-themes@master/dist/github.css"><link rel="canonical" href="https://yayo13.github.io/2023/02/14/%E5%AF%B9%E8%AF%9D%E7%B3%BB%E7%BB%9F-Rasa-Core%E5%AF%B9%E8%AF%9D%E7%AE%A1%E7%90%86-%E6%84%8F%E5%9B%BEintent-%E5%AE%9E%E4%BD%93entity-%E6%A7%BDslot-3/"><link rel="alternate" type="application/atom+xml" title="zizi7's blog" href="https://yayo13.github.io"><link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/favicon.ico"><meta property="og:title" content="【对话系统】Rasa Core对话管理-意图intent、实体entity、槽slot（3）"><meta name="keywords" content=""><meta name="og:keywords" content=""><meta name="description" content=""><meta name="og:description" content=""><meta property="og:url" content="https://yayo13.github.io/2023/02/14/%E5%AF%B9%E8%AF%9D%E7%B3%BB%E7%BB%9F-Rasa-Core%E5%AF%B9%E8%AF%9D%E7%AE%A1%E7%90%86-%E6%84%8F%E5%9B%BEintent-%E5%AE%9E%E4%BD%93entity-%E6%A7%BDslot-3/"><meta property="og:site_name" content="zizi7's blog"><meta property="og:type" content="article"><meta property="og:locale" content="zh_CN" /><meta property="article:published_time" content="2023-02-14"> <script src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/vendor/jquery/dist/jquery.min.js"></script> <script src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/js/jquery-ui.js"></script> <script src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/js/main.js"></script></head><body class="" data-mz=""><header class="site-header"><div class="container"><h1><a href="https://yayo13.github.io/" title="zizi7's blog"><span class="octicon octicon-mark-github"></span> zizi7's blog</a></h1><button class="collapsed mobile-visible" type="button" onclick="toggleMenu();"> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </button><nav class="site-header-nav" role="navigation"> <a href="https://yayo13.github.io/" class=" site-header-nav-item" target="" title="首页">首页</a> <a href="https://yayo13.github.io/categories/" class=" site-header-nav-item" target="" title="分类">分类</a> <a href="https://yayo13.github.io/about/" class=" site-header-nav-item" target="" title="关于">关于</a></nav></div></header><section class="collection-head small geopattern" data-pattern-id="【对话系统】Rasa Core"><div class="container"><div class="columns"><div class="column three-fourths"><div class="collection-title"><h1 class="collection-header">【对话系统】Rasa Core对话管理-意图intent、实体entity、槽slot（3）</h1><div class="collection-info"> <span class="meta-info"> <span class="octicon octicon-calendar"></span> 2023/02/14 </span> <span class="meta-info"> <span class="octicon octicon-file-directory"></span> <a href="https://yayo13.github.io/categories/#NLP" title="NLP">NLP</a> </span> <span class="meta-info"> <span class="octicon octicon-file-directory"></span> <a href="https://yayo13.github.io/categories/#对话系统" title="对话系统">对话系统</a> </span> <span class="meta-info"> <span class="octicon octicon-clock"></span> 共 4874 字，约 14 分钟 </span></div></div></div><div class="column one-fourth mobile-hidden"><div class="collection-title"></div></div></div></div></section><section class="container content"><div class="columns"><div class="column three-fourths" ><article class="article-content markdown-body"><style> .img_txt{text-align:center} table{margin: auto;}</style><p>Rasa Core是Rasa中负责对话管理的部分，负责<mark>记录对话过程</mark>并<mark>选择下一个动作</mark></p><p>Rasa Core以NLU输出的意图和实体为输入，使用词槽slot和表单form为内部变量保存对话信息，根据预测组件输出预设的动作action或回复response</p><ul><li>Rasa Core在<code class="language-plaintext highlighter-rouge">domain.yml</code>中声明意图、实体、保存对话信息的变量、预设动作及回复</li><li>在<code class="language-plaintext highlighter-rouge">config.yml</code>中设置动作及回复的预测组件</li></ul><hr /><h1 id="对话管理训练数据">对话管理训练数据</h1><p>如上文所述，该部分数据均在<code class="language-plaintext highlighter-rouge">domain.yml</code>文件中（也可以记录在多个文件，训练的时候指定domain的目录）</p><div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># domain数据在多个文件中的情况</span>
+rasa train <span class="nt">--domain</span> path_to_domain_directory
+</code></pre></div></div><p>详细的介绍参考<a href="https://rasa.com/docs/rasa/domain">官方文档Domain</a></p><h2 id="意图数据声明">意图数据声明</h2><p>在<code class="language-plaintext highlighter-rouge">intents</code>关键字下声明NLU训练数据（nlu.yml）中涉及到的所有意图名称</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">intents</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">greet</span>
+  <span class="pi">-</span> <span class="s">goodbye</span>
+  <span class="pi">-</span> <span class="s">query_knowledge</span>
+</code></pre></div></div><p>对某个意图，可以选择忽略某些实体</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">intents</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">greet1</span><span class="pi">:</span>
+      <span class="c1"># 忽略该意图中的所有实体</span>
+      <span class="na">use_entities</span><span class="pi">:</span> <span class="pi">[]</span>
+  <span class="pi">-</span> <span class="na">greet2</span><span class="pi">:</span>
+      <span class="c1"># 仅使用该意图中的部分实体</span>
+      <span class="na">use_entities</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">name</span>
+        <span class="pi">-</span> <span class="s">first_name</span>
+  <span class="pi">-</span> <span class="na">farewell</span><span class="pi">:</span>
+      <span class="c1"># 忽略该意图中的部分实体</span>
+      <span class="na">ignore_entities</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">location</span>
+        <span class="pi">-</span> <span class="s">age</span>
+        <span class="pi">-</span> <span class="s">last_name</span>
+</code></pre></div></div><h2 id="实体数据声明">实体数据声明</h2><p>在<code class="language-plaintext highlighter-rouge">entities</code>关键字下声明NLU训练数据（nlu.yml）中涉及到的所有实体名称</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">entities</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">disease</span>
+  <span class="pi">-</span> <span class="s">object_type</span>
+  <span class="pi">-</span> <span class="s">attribute</span>
+</code></pre></div></div><p>如果训练数据中的实体还包含<strong>角色roles和分组groups</strong>，则这里也需要做相应声明</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">entities</span><span class="pi">:</span>
+   <span class="pi">-</span> <span class="na">city</span><span class="pi">:</span>            
+       <span class="na">roles</span><span class="pi">:</span>     <span class="c1"># 训练数据中为city这个实体添加了“出发地”和“目的地”两种角色</span>
+         <span class="pi">-</span> <span class="s">from</span>
+         <span class="pi">-</span> <span class="s">to</span>
+   <span class="pi">-</span> <span class="na">size</span><span class="pi">:</span>            
+       <span class="na">groups</span><span class="pi">:</span>    <span class="c1"># 训练数据中提到了两个东西的尺寸size，对其做分组，第1组表示第1个东西的尺寸</span>
+         <span class="pi">-</span> <span class="m">1</span>
+         <span class="pi">-</span> <span class="m">2</span>
+</code></pre></div></div><p><mark>默认情况提取的实体会影响预测组件的输出</mark></p><ul><li>如果仅对<strong>特定意图</strong>，需要屏蔽某实体的影响，可以像上一节在<strong>意图声明</strong>中用<code class="language-plaintext highlighter-rouge">use_entities</code>和<code class="language-plaintext highlighter-rouge">ignore_entities</code></li><li>如果需要对<strong>所有意图</strong>屏蔽某实体的影响，可以在<strong>实体声明</strong>中用<code class="language-plaintext highlighter-rouge">influence_conversation</code></li></ul><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">entities</span><span class="pi">:</span>
+<span class="pi">-</span> <span class="na">location</span><span class="pi">:</span>
+    <span class="na">influence_conversation</span><span class="pi">:</span> <span class="no">false</span>
+</code></pre></div></div><h2 id="对话信息变量">对话信息变量</h2><p>rasa中的槽slot相当于机器人的记忆，其使用<mark>字典结构</mark>记录对话过程中的信息</p><p>表单form是另一种记录对话过程信息的变量，适用于需要用户提供多种信息才能给出答案的情况</p><h3 id="槽slot">槽slot</h3><p>在<code class="language-plaintext highlighter-rouge">slots</code>关键字下声明对话过程中需要的槽</p><p>一个槽声明的基本元素包括<mark>槽值类型type</mark>和其<mark>自动赋值方式mappings</mark></p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">slots</span><span class="pi">:</span>
+  <span class="na">slot_name</span><span class="pi">:</span>                       <span class="c1"># slot的名称</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">text</span>                     <span class="c1"># slot存放值的类型</span>
+    <span class="na">influence_conversation</span><span class="pi">:</span> <span class="no">false</span>  <span class="c1"># 不影响预测组件的输出(仅保存信息)</span>
+    <span class="na">mappings</span><span class="pi">:</span>                      <span class="c1"># slot的自动填充方式</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">from_entity</span>
+      <span class="na">entity</span><span class="pi">:</span> <span class="s">entity_name</span>
+</code></pre></div></div><p>每个槽可以通过<code class="language-plaintext highlighter-rouge">influence_conversation</code>设置其是否影响预测组件的输出，当其设置为<code class="language-plaintext highlighter-rouge">true</code>时对应的槽<mark>是否被赋值</mark>会影响预测组件输出</p><p>类型为<code class="language-plaintext highlighter-rouge">Any</code>的槽不支持设置<code class="language-plaintext highlighter-rouge">influence_conversation</code></p><p>比如对于问询天气的意图</p><ul><li>如果槽city已经被赋值，预测组件直接输出查询天气并回复的action</li><li>如果槽city没有被赋值，预测组件输出询问城市的action</li></ul><p>此外可以通过<code class="language-plaintext highlighter-rouge">initial_value</code>为槽设定<mark>初始值</mark></p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">slots</span><span class="pi">:</span>
+  <span class="na">num_fallbacks</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">float</span>
+    <span class="na">initial_value</span><span class="pi">:</span> <span class="m">0</span>   <span class="c1"># 设置初始值为0</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">custom</span>
+</code></pre></div></div><table><tr><th>槽类型</th><th>应用场景</th><th>说明</th></tr><tr><td>text</td><td>文本类型数据</td><td></td></tr><tr><td>bool</td><td>true/false两种数据</td><td></td></tr><tr><td>categorical</td><td>枚举量</td><td>同时需定义所有枚举量</td></tr><tr><td>float</td><td>浮点数</td><td>同时需指定数值范围，填充时会根据该范围做自动截断</td></tr><tr><td>list</td><td>列表</td><td>比如当实体为购物清单时</td></tr><tr><td>any</td><td>任意类型数据</td><td>比如当数据为字典形式时</td></tr><tr><td>自定义类型</td><td>自定义类型</td><td>需要重载Slot类实现</td></tr></table><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">slots</span><span class="pi">:</span>
+  <span class="c1"># categorical类型需要通过关键字values设置所有枚举量</span>
+  <span class="na">risk_level</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">categorical</span>
+    <span class="na">values</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">low</span>
+      <span class="pi">-</span> <span class="s">medium</span>
+      <span class="pi">-</span> <span class="s">high</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">custom</span>
+
+  <span class="c1"># float类型需要指定min_value和max_value，自动填充时会强制将值截断到该范围</span>
+  <span class="na">temperature</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">float</span>
+    <span class="na">min_value</span><span class="pi">:</span> <span class="s">-100.0</span>
+    <span class="na">max_value</span><span class="pi">:</span>  <span class="m">100.0</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">custom</span>
+</code></pre></div></div><h3 id="自定义槽类型">自定义槽类型</h3><p>1）重载<code class="language-plaintext highlighter-rouge">Slot</code>类实现函数<code class="language-plaintext highlighter-rouge">feature_dimensionality</code>和<code class="language-plaintext highlighter-rouge">as_feature</code></p><div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">### 自定义槽类型示例
+</span><span class="kn">from</span> <span class="nn">rasa.shared.core.slots</span> <span class="kn">import</span> <span class="n">Slot</span>
+
+<span class="k">class</span> <span class="nc">NumberOfPeopleSlot</span><span class="p">(</span><span class="n">Slot</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">feature_dimensionality</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">2</span>
+
+    <span class="k">def</span> <span class="nf">as_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">feature_dimensionality</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="mi">6</span><span class="p">:</span>
+                <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">return</span> <span class="n">r</span>
+</code></pre></div></div><p>2）在<code class="language-plaintext highlighter-rouge">domain.yml</code>中使用自定义的槽类型</p><p>假定上述py文件保存路径为addons/my_custom_slots.py</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">└── rasa_bot</span>
+    <span class="s">├── addons</span>
+    <span class="s">│   ├── __init__.py</span>
+    <span class="s">│   └── my_custom_slots.py</span>
+    <span class="s">├── config.yml</span>
+    <span class="s">├── credentials.yml</span>
+    <span class="s">├── data</span>
+    <span class="s">├── domain.yml</span>
+    <span class="s">├── endpoints.yml</span>
+</code></pre></div></div><p>那么<code class="language-plaintext highlighter-rouge">domain.yml</code>的声明为</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">slots</span><span class="pi">:</span>
+  <span class="na">people</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">addons.my_custom_slots.NumberOfPeopleSlot</span>
+    <span class="na">influence_conversation</span><span class="pi">:</span> <span class="no">true</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">custom</span>
+</code></pre></div></div><h3 id="槽的自动填充mappings">槽的自动填充mappings</h3><p>slot使用<code class="language-plaintext highlighter-rouge">mappings</code>关键字设置其自动填充方式</p><p>一个slot可以<mark>同时设置多种填充方式</mark>，rasa会按先后顺序尝试，一旦填充成功则忽略后面的方式</p><table><tr><th>填充方式</th><th>应用场景</th><th>说明</th></tr><tr><td>from_entity</td><td>从抽取得到的实体得到</td><td>需要指定关联的实体名称</td></tr><tr><td>from_text</td><td>保存最近一次用户的语句</td><td></td></tr><tr><td>from_intent</td><td>只要符合设定的intent，则赋值预设的值</td><td>需要指定预设的值</td></tr><tr><td>from_trigger_intent</td><td>当表格form被激活时，只要符合设定的intent，则赋值预设的值</td><td>需要指定预设的值</td></tr><tr><td>custom</td><td>自定义的填充方法</td><td>需要指定触发的action</td></tr></table><ul><li>上述所有填充方式均可通过<code class="language-plaintext highlighter-rouge">intent</code>和<code class="language-plaintext highlighter-rouge">not_intent</code>做进一步限定，不满足意图条件的不被填充</li><li><code class="language-plaintext highlighter-rouge">from_entity</code>还可以通过<code class="language-plaintext highlighter-rouge">role</code>和<code class="language-plaintext highlighter-rouge">group</code>做限定，不满足指定角色和分组的不被填充</li></ul><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">slots</span><span class="pi">:</span>
+  <span class="c1"># from_entity填充方式</span>
+  <span class="na">slot_name1</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">any</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">from_entity</span>
+      <span class="na">entity</span><span class="pi">:</span> <span class="s">entity_name</span>
+      <span class="na">role</span><span class="pi">:</span> <span class="s">role_name</span>              <span class="c1"># 该实体需要同时是role_name</span>
+      <span class="na">group</span><span class="pi">:</span> <span class="s">group name</span>            <span class="c1"># 该实体需要同时是group_name</span>
+      <span class="na">intent</span><span class="pi">:</span> <span class="s">intent_name</span>          <span class="c1"># 该实体需要同时属于意图intent_name</span>
+      <span class="na">not_intent</span><span class="pi">:</span> <span class="s">excluded_intent</span>  <span class="c1"># 该实体需要同时不属于意图intent_name</span>
+    <span class="c1"># 同时设置了多种填充方式，当上面的方式无法填充时使用该方式</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">from_entity</span>
+      <span class="na">entity</span><span class="pi">:</span> <span class="s">entity_name</span>
+
+  <span class="c1"># from_intent填充方式需要指定填充内容my_value</span>
+  <span class="na">slot_name2</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">any</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">from_intent</span>
+      <span class="na">value</span><span class="pi">:</span> <span class="s">my_value</span>
+      <span class="na">intent</span><span class="pi">:</span> <span class="s">intent_name</span>
+      <span class="na">not_intent</span><span class="pi">:</span> <span class="s">excluded_intent</span>
+  
+  <span class="c1"># from_trigger_intent填充方式需要指定填充内容my_value</span>
+  <span class="na">slot_name3</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">any</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">from_trigger_intent</span>
+      <span class="na">value</span><span class="pi">:</span> <span class="s">my_value</span>
+      <span class="na">intent</span><span class="pi">:</span> <span class="s">intent_name</span>
+      <span class="na">not_intent</span><span class="pi">:</span> <span class="s">excluded_intent</span>
+
+  <span class="c1"># 自定义的填充方法，当指定动作action_calculate_day_of_week执行后填充该slot</span>
+  <span class="na">day_of_week</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">text</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">custom</span>
+      <span class="na">action</span><span class="pi">:</span> <span class="s">action_calculate_day_of_week</span>
+</code></pre></div></div><h3 id="自动填充的条件限定">自动填充的条件限定</h3><p>1）如上节所述，可以通过<code class="language-plaintext highlighter-rouge">intent</code>、<code class="language-plaintext highlighter-rouge">not_intent</code>等方式限制slot的自动填充</p><p>2）同时可以通过关键字<code class="language-plaintext highlighter-rouge">conditions</code>限制slot的填充</p><p>3）全局范围的<code class="language-plaintext highlighter-rouge">config</code>定义可以控制slot的自动填充</p><p>4）另外<code class="language-plaintext highlighter-rouge">from_entity</code>本身也有隐含的过滤机制</p><p><strong>首先讨论<code class="language-plaintext highlighter-rouge">from_entity</code>的隐含过滤机制</strong></p><p><mark>当表格form被激活时</mark></p><ul><li>或者<code class="language-plaintext highlighter-rouge">from_entity</code>的关联<code class="language-plaintext highlighter-rouge">entity_name</code>恰好是form当前步骤所需（填充表格是一个过程，每次填一项）</li><li>或者<code class="language-plaintext highlighter-rouge">from_entity</code>的关联<code class="language-plaintext highlighter-rouge">entity_name</code>仅满足form所需的某一项</li></ul><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">slots</span><span class="pi">:</span>
+  <span class="na">departure_city</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">text</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">from_entity</span>
+      <span class="na">entity</span><span class="pi">:</span> <span class="s">city</span>
+      <span class="na">role</span><span class="pi">:</span> <span class="s">from</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">from_entity</span>
+      <span class="na">entity</span><span class="pi">:</span> <span class="s">city</span>
+  <span class="na">arrival_city</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">text</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">from_entity</span>
+      <span class="na">entity</span><span class="pi">:</span> <span class="s">city</span>
+      <span class="na">role</span><span class="pi">:</span> <span class="s">to</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">from_entity</span>
+      <span class="na">entity</span><span class="pi">:</span> <span class="s">city</span>
+  <span class="na">arrival_date</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">any</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">from_entity</span>
+      <span class="na">entity</span><span class="pi">:</span> <span class="s">date</span>
+<span class="na">forms</span><span class="pi">:</span>
+  <span class="na">your_form</span><span class="pi">:</span>
+    <span class="na">required_slots</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">departure_city</span>
+    <span class="pi">-</span> <span class="s">arrival_city</span>
+    <span class="pi">-</span> <span class="s">arrival_date</span>
+</code></pre></div></div><p>如上例，假定<code class="language-plaintext highlighter-rouge">your_form</code>表格处于激活状态，当前实体抽取结果中包含一个<code class="language-plaintext highlighter-rouge">city</code>，但没有角色信息，那么表格所需的<code class="language-plaintext highlighter-rouge">departure_city</code>和<code class="language-plaintext highlighter-rouge">arrival_city</code>都可被填充，但这很显然是不合理的</p><p>因此上述的两个限定条件可以举例为：</p><ul><li>如果上一次对话是问“你希望目的地是哪里”，那么当前步骤其实就是填充表格<code class="language-plaintext highlighter-rouge">arrival_city</code>，即使<code class="language-plaintext highlighter-rouge">city</code>没有角色信息也应该赋值</li><li>除了上述情况，系统发现表格中同时有两个slot可以被填充同一个值，意味着缺少属性信息，则不能赋值</li></ul><p><strong>然后讨论<code class="language-plaintext highlighter-rouge">conditions</code>的过滤机制</strong></p><p><code class="language-plaintext highlighter-rouge">conditions</code>可以用来限定<mark>当指定表格激活时</mark>才允许自动填充</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">slots</span><span class="pi">:</span>
+  <span class="na">slot_name</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">text</span>
+    <span class="na">mappings</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">from_text</span>
+      <span class="na">intent</span><span class="pi">:</span> <span class="s">intent_name</span>
+      <span class="na">conditions</span><span class="pi">:</span>
+      <span class="c1"># 只有当your_form处于激活状态，并且表格正在询问slot_name时才自动填充</span>
+      <span class="pi">-</span> <span class="na">active_loop</span><span class="pi">:</span> <span class="s">your_form</span>
+        <span class="na">requested_slot</span><span class="pi">:</span> <span class="s">slot_name</span>
+      <span class="c1"># 只有当another_form处于激活状态才自动填充</span>
+      <span class="pi">-</span> <span class="na">active_loop</span><span class="pi">:</span> <span class="s">another_form</span>
+</code></pre></div></div><p><strong>最后讨论全局范围的<code class="language-plaintext highlighter-rouge">config</code>定义</strong></p><p>在<code class="language-plaintext highlighter-rouge">domain.yml</code>中可以使用<code class="language-plaintext highlighter-rouge">config</code>控制slot的自动填充</p><div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 该选项默认为true</span>
+<span class="c1"># 当设置为false后，会阻止from_entity的自动填充</span>
+<span class="na">config</span><span class="pi">:</span>
+  <span class="na">store_entities_as_slots</span><span class="pi">:</span> <span class="no">false</span>
+</code></pre></div></div><hr /></article><div class="share"></div><div class="comment"></div></div><div class="column one-fourth"><h3>Search</h3><div id="site_search"> <input style="width:96%" type="text" id="search_box" placeholder="Search"></div><ul id="search_results" style="font-size:14px;list-style-type:none;padding-top:10px;padding-left:10px;"></ul><script src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/js/simple-jekyll-search.min.js"></script> <script type="text/javascript"> SimpleJekyllSearch({ searchInput: document.getElementById('search_box'), resultsContainer: document.getElementById('search_results'), json: 'https://yayo13.github.io/assets/search_data.json?v=1676979773', searchResultTemplate: '<li><a href="{url}" title="{title}">{title}</a></li>', noResultsText: 'No results found', limit: 10, fuzzy: false, exclude: ['Welcome'] }) </script><h3 class="post-directory-title mobile-hidden">Table of Contents</h3><div id="post-directory-module" class="mobile-hidden"><section class="post-directory"><dl></dl></section></div><script src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/js/jquery.toc.js"></script></div></div></section><script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script> <script type="text/x-mathjax-config"> MathJax.Hub.Config({ tex2jax: { skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'], inlineMath: [['$','$']] } }); </script><footer class="container"><div class="site-footer" role="contentinfo"><div class="copyright left mobile-block"> © 2021 <span title="zizi7">zizi7</span> <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a></div><ul class="site-footer-links right mobile-hidden"><li> <a href="javascript:window.scrollTo(0,0)" >TOP</a></li></ul><a href="https://github.com/yayo13/yayo13.github.io" target="_blank" aria-label="view source code"> <span class="mega-octicon octicon-mark-github" title="GitHub"></span> </a><ul class="site-footer-links mobile-hidden"><li> <a href="https://yayo13.github.io/" title="首页" target="">首页</a></li><li> <a href="https://yayo13.github.io/categories/" title="分类" target="">分类</a></li><li> <a href="https://yayo13.github.io/about/" title="关于" target="">关于</a></li><li><a href="https://yayo13.github.io"><span class="octicon octicon-rss" style="color:orange;"></span></a></li></ul><script async src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/vendor/busuanzi/2.3/busuanzi.pure.mini.js"></script><div class="mobile-hidden" style="margin-top:8px"> <span id="busuanzi_container_site_pv" style="display:none"> 本站访问量<span id="busuanzi_value_site_pv"></span>次 </span> <span id="busuanzi_container_site_uv" style="display:none"> / 本站访客数<span id="busuanzi_value_site_uv"></span>人 </span> <span id="busuanzi_container_page_pv" style="display:none"> / 本页访问量<span id="busuanzi_value_page_pv"></span>次 / 统计始于2021-04-28 </span></div></div></footer><div class="tools-wrapper"> <a class="gotop" href="#" title="回到顶部"><span class="octicon octicon-arrow-up"></span></a></div><script src="https://cdn.jsdelivr.net/gh/yayo13/yayo13.github.io@master/assets/js/geopattern.js"></script> <script> jQuery(document).ready(function($) { $('.geopattern').each(function(){ $(this).geopattern($(this).data('pattern-id')); }); /* hljs.initHighlightingOnLoad(); */ }); </script></body></html>
